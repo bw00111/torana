@@ -188,7 +188,7 @@ body{display:flex;justify-content:center;align-items:center}
 <div class="info-title">10-D ශ්‍රේණියේ<br>සිසුන්ගේ නිර්මාණයකි</div>
 <div class="info-divider"></div>
 <div class="info-sub-label">උපදෙස් හා මඟ පෙන්වීම</div>
-<div class="info-subtitle">එරන්දි රූපසිංහ මිය</div>
+<div class="info-subtitle">ඩබ්ලිව් .ඒ.එරන්දි මිය</div>
 <div class="info-crest">
 <div class="info-crest-icon">📚</div>
 <div class="info-year">2 0 2 5</div>
@@ -201,7 +201,7 @@ body{display:flex;justify-content:center;align-items:center}
 </button>
 
 <div class="info-bottom">
-<span>VESAK THORANA 2025</span>
+<span>වෙසක් තොරණ 2025</span>
 </div>
 </div>
 </div>
@@ -241,10 +241,10 @@ body{display:flex;justify-content:center;align-items:center}
 <div class="success-emoji">🎆🪷🎆</div>
 <div class="success-text">
 <span class="success-number" id="successNumber"></span><br>
-අංකයට කෙටි පණිවිඩයක් එවා ඇත.
+අංකයට කෙටි පණිවිඩයක් එවා ඇත. ස්තූතියි!
 </div>
 <div class="success-wish">සුභ වෙසක් මංගල්‍යයක් වේවා!</div>
-<div class="success-credits">10 D ශ්‍රේණියේ සිසුන් සහ ගුරුවරිය</div>
+<div class="success-credits">10 D ශ්‍රේණියේ ගුරුතුමිය සමඟ සිසු කැල</div>
 </div>
 </div>
 
@@ -258,7 +258,7 @@ const RUFFLE_SOURCES=['https://unpkg.com/@ruffle-rs/ruffle/ruffle.js','https://c
 const SMS_API='https://app.text.lk/api/v3/sms/send';
 const SMS_TOKEN='2978|LJtLlcBp7kBtuwPflj9rgkFSB4nb9FQIVMgNhOU918611bc8';
 const SMS_SENDER='TextLKDemo';
-const SMS_MESSAGE='සුභ වෙසක් උත්සවයක් වේවා - 10 ශ්‍රේණියේ D ශ්‍රේණියේ සුභ පැතුම්. ඩිජිටල් වෙසක් කාඩ්පත බැලීමට මෙතන ක්ලික් කරන්න https://10dvesaknalanda.netlify.app';
+const SMS_MESSAGE='පින්බර වෙසක් මංගල්‍යයක් වේවා - 10 - D ශ්‍රේණියේ සුභ පැතුම්. අප විසින් නිමැවූ ඩිජිටල් වෙසක් කාඩ්පත බැලීමට මෙතන ක්ලික් කරන්න https://10dvesaknalanda.netlify.app   -10 - D ගුරුතුමිය සමඟ සිසු කැල.'  ;
 
 const $=id=>document.getElementById(id);
 
@@ -319,7 +319,7 @@ loadingScreen.classList.add('active');let progress=0;
 loadStatus.textContent='Flash එන්ජිම පූරණය වෙමින්...';
 const fi=setInterval(()=>{if(progress<85){progress=Math.min(progress+Math.random()*4+1,85);loadPercent.textContent=Math.floor(progress)+'%'}},150);
 Promise.all([rp,swfFetchPromise||Promise.resolve(null)]).then(()=>{
-clearInterval(fi);loadStatus.textContent='ප්‍රදර්ශනය ආරම්භ කරමින්...';
+clearInterval(fi);loadStatus.textContent='තොරණ සූදානම් කරමින්....';
 let p=Math.floor(progress);
 const ri=setInterval(()=>{p+=5;if(p>=100){p=100;loadPercent.textContent='100%';clearInterval(ri);setTimeout(showPlayer,300)}else loadPercent.textContent=p+'%'},20);
 }).catch(err=>{clearInterval(fi);console.error(err);loadStatus.textContent='පූරණය අසාර්ථකයි';loadPercent.textContent='දෝෂය';setTimeout(showError,1500)});
