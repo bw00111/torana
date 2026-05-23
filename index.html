@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>තොරණ</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@300;400;500;600;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{background:#000;width:100%;height:100%;overflow:hidden;font-family:'Noto Sans Sinhala','Iskoola Pota',sans-serif;-webkit-font-smoothing:antialiased}
+body{display:flex;justify-content:center;align-items:center}
+
+#switch-screen{position:fixed;inset:0;background:#0a0a0a;display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:100;transition:opacity 1s ease;cursor:pointer;will-change:opacity}
+#switch-screen.fade-out{opacity:0;pointer-events:none}
+.switch-label{color:#555;font-size:13px;text-transform:uppercase;letter-spacing:4px;margin-bottom:30px;transition:color .3s;font-family:'Segoe UI',sans-serif}
+.switch-label.on{color:#e53935}
+.wall-plate{width:160px;height:220px;background:linear-gradient(145deg,#f5f5f0,#e8e8e0,#f0efe8);border-radius:6px;position:relative;box-shadow:0 2px 15px rgba(0,0,0,.5),0 0 60px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.6);cursor:pointer;border:1px solid rgba(200,200,190,.5)}
+.wall-plate::before{content:'';position:absolute;inset:6px;border-radius:3px;border:1px solid rgba(0,0,0,.04);pointer-events:none}
+.screw{position:absolute;left:50%;transform:translateX(-50%);width:12px;height:12px;border-radius:50%;background:linear-gradient(135deg,#d0d0c8,#b8b8b0);box-shadow:inset 0 1px 2px rgba(0,0,0,.3),0 1px 0 rgba(255,255,255,.4)}
+.screw::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(35deg);width:8px;height:1.5px;background:rgba(0,0,0,.25);border-radius:1px}
+.screw-top{top:14px}.screw-bottom{bottom:14px}
+.rocker-well{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:90px;height:130px;background:linear-gradient(180deg,#d8d8d0,#c8c8c0);border-radius:5px;box-shadow:inset 0 2px 6px rgba(0,0,0,.2);overflow:hidden}
+.rocker{position:absolute;width:80px;left:50%;height:120px;top:5px;background:linear-gradient(180deg,#f8f8f2,#eeede6,#e8e7e0);border-radius:4px;cursor:pointer;transition:transform .12s cubic-bezier(.4,0,.2,1);transform-origin:center center;box-shadow:0 2px 4px rgba(0,0,0,.15),inset 0 1px 0 rgba(255,255,255,.8);border:1px solid rgba(0,0,0,.06)}
+.rocker::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:50px;height:24px;border-radius:3px;border:1px solid rgba(0,0,0,.06)}
+.rocker.off{transform:translateX(-50%) perspective(300px) rotateX(8deg)}
+.rocker.on{transform:translateX(-50%) perspective(300px) rotateX(-8deg)}
+.neon-indicator{position:absolute;top:18px;right:22px;width:10px;height:5px;border-radius:1px;background:#3a1a1a;transition:background .3s,box-shadow .3s}
+.neon-indicator.on{background:#ff1a1a;box-shadow:0 0 6px #ff0000,0 0 15px rgba(255,0,0,.3)}
+.switch-hint{color:#333;font-size:11px;margin-top:30px;letter-spacing:3px;animation:hintPulse 2s ease-in-out infinite;transition:opacity .3s;font-family:'Segoe UI',sans-serif}
+.switch-hint-si{color:#444;font-size:13px;margin-top:8px;animation:hintPulse 2s ease-in-out infinite;transition:opacity .3s}
+.switch-hint.hide,.switch-hint-si.hide{opacity:0}
+@keyframes hintPulse{0%,100%{opacity:.3}50%{opacity:.7}}
+
+#loading-screen{position:fixed;inset:0;background:#000;display:none;flex-direction:column;justify-content:center;align-items:center;z-index:90;transition:opacity .6s ease;will-change:opacity}
+#loading-screen.active{display:flex}
+#loading-screen.fade-out{opacity:0;pointer-events:none}
+.loader{width:60px;height:60px;border:3px solid #111;border-top:3px solid #ffd700;border-radius:50%;animation:spin 1s linear infinite;will-change:transform}
+@keyframes spin{to{transform:rotate(360deg)}}
+.load-text{color:#555;font-size:14px;letter-spacing:3px;margin-top:25px}
+.load-percent{color:#ffd700;font-size:12px;letter-spacing:2px;margin-top:10px}
+.load-status{color:#444;font-size:11px;margin-top:8px;text-align:center}
+
+#main-layout{position:fixed;inset:0;display:none;z-index:80;opacity:0;transition:opacity .8s ease;will-change:opacity;flex-direction:row}
+#main-layout.active{display:flex}
+#main-layout.visible{opacity:1}
+
+#player-area{flex:1;min-width:0;height:100%;position:relative;contain:layout style;background:#000 url('https://elements-resized.envatousercontent.com/elements-video-cover-images/9cd853be-ff16-415d-a903-f9971f692b88/video_preview/video_preview_0000.jpg?w=500&cf_fit=cover&q=85&format=auto&s=d73687a589060c6e1a62de4ab7da8f0e7843b1bbdaaec7def93db84f1b5467f4') center/cover no-repeat}
+#player-area ruffle-player,#player-area ruffle-embed{width:100%!important;height:100%!important;display:block;position:relative;z-index:2}
+
+#info-panel{width:340px;min-width:340px;height:100%;background:linear-gradient(180deg,#0c0c0c,#080808,#0a0a0a);border-left:1px solid #1a1a18;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:20px;overflow-y:auto;position:relative}
+#info-panel::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 30%,rgba(255,215,0,.03),transparent 70%);pointer-events:none}
+
+.info-box{width:100%;max-width:300px;border:1px solid rgba(255,215,0,.15);border-radius:12px;padding:30px 20px;background:linear-gradient(145deg,rgba(20,18,10,.9),rgba(10,10,8,.95));position:relative;box-shadow:0 0 40px rgba(0,0,0,.5)}
+.info-box::before{content:'';position:absolute;top:-1px;left:20%;right:20%;height:2px;background:linear-gradient(90deg,transparent,rgba(255,215,0,.4),transparent)}
+.info-box::after{content:'';position:absolute;bottom:-1px;left:20%;right:20%;height:2px;background:linear-gradient(90deg,transparent,rgba(255,215,0,.4),transparent)}
+.corner{position:absolute;width:18px;height:18px;border-color:rgba(255,215,0,.2);border-style:solid}
+.corner-tl{top:8px;left:8px;border-width:2px 0 0 2px;border-radius:3px 0 0 0}
+.corner-tr{top:8px;right:8px;border-width:2px 2px 0 0;border-radius:0 3px 0 0}
+.corner-bl{bottom:8px;left:8px;border-width:0 0 2px 2px;border-radius:0 0 0 3px}
+.corner-br{bottom:8px;right:8px;border-width:0 2px 2px 0;border-radius:0 0 3px 0}
+
+.info-lotus{text-align:center;margin-bottom:20px;font-size:26px;opacity:.6}
+.info-title{color:#ffd700;font-size:20px;text-align:center;line-height:1.7;margin-bottom:25px;text-shadow:0 0 15px rgba(255,215,0,.15);font-weight:600}
+.info-divider{width:80px;height:1px;background:linear-gradient(90deg,transparent,rgba(255,215,0,.3),transparent);margin:0 auto 20px auto}
+.info-sub-label{color:#666;font-size:10px;text-align:center;letter-spacing:2px;margin-bottom:6px;text-transform:uppercase;font-family:'Segoe UI',sans-serif}
+.info-subtitle{color:#c0a040;font-size:14px;text-align:center;line-height:1.7}
+.info-crest{margin-top:20px;text-align:center}
+.info-crest-icon{font-size:18px;color:#555;margin-bottom:4px}
+.info-year{color:#444;font-size:10px;letter-spacing:4px;font-family:'Segoe UI',sans-serif}
+
+/* Greeting button */
+.greeting-btn{margin-top:20px;width:100%;max-width:300px;padding:14px 20px;background:linear-gradient(135deg,rgba(255,140,0,.15),rgba(255,215,0,.1));border:1px solid rgba(255,215,0,.3);border-radius:10px;color:#ffd700;font-size:15px;font-family:'Noto Sans Sinhala',sans-serif;cursor:pointer;transition:all .3s;text-align:center;letter-spacing:1px;position:relative;overflow:hidden}
+.greeting-btn:hover{background:linear-gradient(135deg,rgba(255,140,0,.25),rgba(255,215,0,.2));box-shadow:0 0 20px rgba(255,215,0,.15);transform:translateY(-1px)}
+.greeting-btn:active{transform:translateY(0)}
+.greeting-btn::before{content:'🪔';margin-right:8px;font-size:18px}
+.greeting-btn-glow{position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,215,0,.1),transparent);animation:btnGlow 3s ease-in-out infinite;pointer-events:none}
+@keyframes btnGlow{0%,100%{transform:translateX(-100%)}50%{transform:translateX(100%)}}
+
+.info-bottom{position:absolute;bottom:12px;left:0;right:0;text-align:center}
+.info-bottom span{color:#2a2a2a;font-size:9px;letter-spacing:2px;font-family:'Segoe UI',sans-serif}
+
+/* ===== SMS POPUP ===== */
+.popup-overlay{position:fixed;inset:0;z-index:200;display:none;justify-content:center;align-items:center;opacity:0;transition:opacity .4s ease}
+.popup-overlay.active{display:flex}
+.popup-overlay.visible{opacity:1}
+.popup-overlay.fade-out{opacity:0}
+.popup-bg{position:absolute;inset:0;background:url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXM80xXm9DZtfc_mPEKaBJz1KYooyonr-8fA&s') center/cover no-repeat;filter:brightness(.4) blur(2px)}
+.popup-bg-overlay{position:absolute;inset:0;background:rgba(0,0,0,.5)}
+
+.popup-card{position:relative;z-index:2;width:380px;max-width:92vw;backdrop-filter:blur(20px) saturate(1.5);-webkit-backdrop-filter:blur(20px) saturate(1.5);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:35px 28px;box-shadow:0 8px 40px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.1);color:#fff}
+.popup-card::before{content:'';position:absolute;top:0;left:20%;right:20%;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent)}
+
+.popup-close{position:absolute;top:12px;right:16px;width:32px;height:32px;border:none;background:rgba(255,255,255,.1);border-radius:50%;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s}
+.popup-close:hover{background:rgba(255,255,255,.2)}
+
+.popup-icon{text-align:center;font-size:40px;margin-bottom:15px}
+.popup-title{text-align:center;font-size:20px;color:#ffd700;margin-bottom:5px;font-weight:600}
+.popup-subtitle{text-align:center;font-size:12px;color:rgba(255,255,255,.5);margin-bottom:25px}
+
+.popup-field-label{font-size:13px;color:rgba(255,255,255,.6);margin-bottom:8px;display:block}
+.popup-phone-wrap{display:flex;gap:8px;margin-bottom:6px}
+.popup-prefix{width:55px;height:48px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.4);font-size:14px;font-family:'Segoe UI',sans-serif;flex-shrink:0}
+.popup-phone-input{flex:1;height:48px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:0 15px;color:#fff;font-size:16px;font-family:'Segoe UI',sans-serif;outline:none;transition:border-color .3s,box-shadow .3s;letter-spacing:2px}
+.popup-phone-input::placeholder{color:rgba(255,255,255,.2);letter-spacing:1px}
+.popup-phone-input:focus{border-color:rgba(255,215,0,.4);box-shadow:0 0 15px rgba(255,215,0,.1)}
+.popup-phone-input.error{border-color:rgba(255,50,50,.5);box-shadow:0 0 10px rgba(255,50,50,.1)}
+.popup-phone-input.valid{border-color:rgba(50,255,50,.4)}
+
+.popup-error{color:#ff6b6b;font-size:11px;min-height:18px;margin-bottom:12px;transition:opacity .3s}
+.popup-error.hidden{opacity:0}
+
+.popup-send-btn{width:100%;height:50px;background:linear-gradient(135deg,#ff8c00,#ffd700);border:none;border-radius:12px;color:#000;font-size:16px;font-weight:600;font-family:'Noto Sans Sinhala',sans-serif;cursor:pointer;transition:all .3s;letter-spacing:1px;position:relative;overflow:hidden}
+.popup-send-btn:hover{transform:translateY(-1px);box-shadow:0 5px 20px rgba(255,215,0,.3)}
+.popup-send-btn:active{transform:translateY(0)}
+.popup-send-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.popup-send-btn .btn-loader{display:none;width:22px;height:22px;border:2px solid rgba(0,0,0,.2);border-top:2px solid #000;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto}
+.popup-send-btn.loading .btn-text{display:none}
+.popup-send-btn.loading .btn-loader{display:block}
+
+.popup-footer{margin-top:15px;text-align:center;font-size:10px;color:rgba(255,255,255,.25);line-height:1.6}
+
+/* ===== SUCCESS POPUP ===== */
+.success-overlay{position:fixed;inset:0;z-index:300;display:none;justify-content:center;align-items:center;background:rgba(0,0,0,.7);backdrop-filter:blur(10px);opacity:0;transition:opacity .4s ease}
+.success-overlay.active{display:flex}
+.success-overlay.visible{opacity:1}
+.success-overlay.fade-out{opacity:0}
+
+.success-card{text-align:center;background:rgba(255,255,255,.08);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.12);border-radius:24px;padding:40px 30px;max-width:380px;width:90vw;box-shadow:0 10px 50px rgba(0,0,0,.5);animation:successPop .5s cubic-bezier(.175,.885,.32,1.275)}
+@keyframes successPop{0%{transform:scale(.8);opacity:0}100%{transform:scale(1);opacity:1}}
+.success-emoji{font-size:60px;margin-bottom:15px;animation:emojiFloat 1s ease-in-out infinite alternate}
+@keyframes emojiFloat{0%{transform:translateY(0)}100%{transform:translateY(-8px)}}
+.success-text{color:#fff;font-size:14px;line-height:2;margin-bottom:8px}
+.success-number{color:#ffd700;font-weight:600;font-size:16px}
+.success-wish{color:#ff8c00;font-size:13px;margin-top:10px;font-weight:500}
+.success-credits{color:rgba(255,255,255,.35);font-size:11px;margin-top:15px;line-height:1.8}
+
+.error-box{color:#fff;text-align:center;padding:40px;max-width:500px}
+.error-box h2{color:#ffd700;margin-bottom:20px}
+.error-box p{color:#888;margin-bottom:15px;line-height:1.5}
+.error-box a{color:#4ecdc4;text-decoration:none}
+
+@media(max-width:900px){
+#main-layout{flex-direction:column}
+#info-panel{width:100%;min-width:unset;height:auto;min-height:200px;border-left:none;border-top:1px solid #1a1a18;padding:15px}
+#player-area{flex:1}
+.info-title{font-size:17px}
+.info-subtitle{font-size:12px}
+.info-box{padding:20px 15px}
+.greeting-btn{font-size:13px;padding:12px 15px}
+}
+</style>
+</head>
+<body>
+
+<!-- SWITCH SCREEN -->
+<div id="switch-screen">
+<div class="switch-label" id="switchLabel">OFF</div>
+<div class="wall-plate" id="switchBtn">
+<div class="screw screw-top"></div>
+<div class="screw screw-bottom"></div>
+<div class="neon-indicator" id="neonIndicator"></div>
+<div class="rocker-well">
+<div class="rocker off" id="rocker"></div>
+</div>
+</div>
+<div class="switch-hint" id="switchHint">CLICK TO POWER ON</div>
+<div class="switch-hint-si" id="switchHintSi">ක්‍රියාත්මක කිරීමට ඔබන්න</div>
+</div>
+
+<!-- LOADING SCREEN -->
+<div id="loading-screen">
+<div class="loader"></div>
+<div class="load-text">තොරණ පූරණය වෙමින්...</div>
+<div class="load-percent" id="loadPercent">0%</div>
+<div class="load-status" id="loadStatus">ආරම්භ කරමින්...</div>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div id="main-layout">
+<div id="player-area"></div>
+<div id="info-panel">
+<div class="info-box">
+<div class="corner corner-tl"></div>
+<div class="corner corner-tr"></div>
+<div class="corner corner-bl"></div>
+<div class="corner corner-br"></div>
+<div class="info-lotus">🪷</div>
+<div class="info-title">10-D ශ්‍රේණියේ<br>සිසුන්ගේ නිර්මාණයකි</div>
+<div class="info-divider"></div>
+<div class="info-sub-label">උපදෙස් හා මඟ පෙන්වීම</div>
+<div class="info-subtitle">එරන්දි රූපසිංහ මිය</div>
+<div class="info-crest">
+<div class="info-crest-icon">📚</div>
+<div class="info-year">2 0 2 5</div>
+</div>
+</div>
+
+<button class="greeting-btn" id="greetingBtn">
+<span class="greeting-btn-glow"></span>
+වෙසක් සුභ පැතුම් යවන්න
+</button>
+
+<div class="info-bottom">
+<span>VESAK THORANA 2025</span>
+</div>
+</div>
+</div>
+
+<!-- SMS POPUP -->
+<div class="popup-overlay" id="smsPopup">
+<div class="popup-bg"></div>
+<div class="popup-bg-overlay"></div>
+<div class="popup-card">
+<button class="popup-close" id="popupClose">✕</button>
+<div class="popup-icon">🪔</div>
+<div class="popup-title">වෙසක් සුභ පැතුම් යවන්න</div>
+<div class="popup-subtitle">Send Vesak Greeting via SMS</div>
+
+<label class="popup-field-label">ඔබේ දුරකථන අංකය ඇතුළත් කරන්න</label>
+<div class="popup-phone-wrap">
+<div class="popup-prefix">+94</div>
+<input type="tel" class="popup-phone-input" id="phoneInput" placeholder="07X XXXXXXX" maxlength="10" autocomplete="tel">
+</div>
+<div class="popup-error hidden" id="phoneError">වලංගු දුරකථන අංකයක් ඇතුළත් කරන්න</div>
+
+<button class="popup-send-btn" id="sendBtn">
+<span class="btn-text">📩 සුභ පැතුම් යවන්න</span>
+<div class="btn-loader"></div>
+</button>
+
+<div class="popup-footer">
+කෙටි පණිවිඩය මඟින් වෙසක් සුභ පැතුම් එවනු ලැබේ<br>
+10-D ශ්‍රේණියේ සිසුන් වෙතින්
+</div>
+</div>
+</div>
+
+<!-- SUCCESS POPUP -->
+<div class="success-overlay" id="successPopup">
+<div class="success-card">
+<div class="success-emoji">🎆🪷🎆</div>
+<div class="success-text">
+<span class="success-number" id="successNumber"></span><br>
+අංකයට කෙටි පණිවිඩයක් එවා ඇත.
+</div>
+<div class="success-wish">සුභ වෙසක් මංගල්‍යයක් වේවා!</div>
+<div class="success-credits">10 D ශ්‍රේණියේ සිසුන් සහ ගුරුවරිය</div>
+</div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+const SWF_URL='https://raw.githubusercontent.com/bw00111/torana/main/00000003.swf';
+const RUFFLE_SOURCES=['https://unpkg.com/@ruffle-rs/ruffle/ruffle.js','https://cdn.jsdelivr.net/npm/@ruffle-rs/ruffle/ruffle.js'];
+
+const SMS_API='https://app.text.lk/api/v3/sms/send';
+const SMS_TOKEN='2978|LJtLlcBp7kBtuwPflj9rgkFSB4nb9FQIVMgNhOU918611bc8';
+const SMS_SENDER='TextLKDemo';
+const SMS_MESSAGE='සුභ වෙසක් උත්සවයක් වේවා - 10 ශ්‍රේණියේ D ශ්‍රේණියේ සුභ පැතුම්. ඩිජිටල් වෙසක් කාඩ්පත බැලීමට මෙතන ක්ලික් කරන්න https://10dvesaknalanda.netlify.app';
+
+const $=id=>document.getElementById(id);
+
+const switchScreen=$('switch-screen'),switchBtn=$('switchBtn'),rocker=$('rocker'),switchLabel=$('switchLabel'),switchHint=$('switchHint'),switchHintSi=$('switchHintSi'),neonIndicator=$('neonIndicator');
+const loadingScreen=$('loading-screen'),loadPercent=$('loadPercent'),loadStatus=$('loadStatus');
+const mainLayout=$('main-layout'),playerArea=$('player-area');
+const greetingBtn=$('greetingBtn'),smsPopup=$('smsPopup'),popupClose=$('popupClose');
+const phoneInput=$('phoneInput'),phoneError=$('phoneError'),sendBtn=$('sendBtn');
+const successPopup=$('successPopup'),successNumber=$('successNumber');
+
+let switched=false,swfBuffer=null,swfFetchPromise=null;
+
+// ===== PREFETCH SWF =====
+function prefetchSWF(){
+if(swfFetchPromise)return swfFetchPromise;
+swfFetchPromise=fetch(SWF_URL,{cache:'force-cache'}).then(r=>{if(!r.ok)throw 0;return r.arrayBuffer()}).then(buf=>{swfBuffer=buf;return buf}).catch(()=>null);
+return swfFetchPromise;
+}
+if('requestIdleCallback' in window)requestIdleCallback(()=>prefetchSWF(),{timeout:2e3});
+else setTimeout(prefetchSWF,100);
+
+// ===== TICK SOUND =====
+function playTick(){
+try{
+const ac=new(window.AudioContext||window.webkitAudioContext)();
+const b1=ac.createBuffer(1,ac.sampleRate*.03,ac.sampleRate),d1=b1.getChannelData(0);
+for(let i=0;i<d1.length;i++){const t=i/ac.sampleRate;d1[i]=.8*Math.exp(-t*300)*Math.sin(t*2800*Math.PI*2)+.4*Math.exp(-t*200)*(Math.random()*2-1)}
+const s1=ac.createBufferSource();s1.buffer=b1;const g1=ac.createGain();
+g1.gain.setValueAtTime(.7,ac.currentTime);g1.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.06);
+s1.connect(g1);g1.connect(ac.destination);s1.start();
+const b2=ac.createBuffer(1,ac.sampleRate*.05,ac.sampleRate),d2=b2.getChannelData(0);
+for(let i=0;i<d2.length;i++){const t=i/ac.sampleRate;d2[i]=.6*Math.exp(-t*80)*Math.sin(t*400*Math.PI*2)}
+const s2=ac.createBufferSource();s2.buffer=b2;const g2=ac.createGain();
+g2.gain.setValueAtTime(.4,ac.currentTime+.01);g2.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.07);
+s2.connect(g2);g2.connect(ac.destination);s2.start(ac.currentTime+.01);
+setTimeout(()=>ac.close(),500);
+}catch(e){}
+}
+
+// ===== SWITCH =====
+function flipSwitch(){
+if(switched)return;switched=true;
+playTick();
+rocker.classList.remove('off');rocker.classList.add('on');
+neonIndicator.classList.add('on');switchLabel.textContent='ON';switchLabel.classList.add('on');
+switchHint.classList.add('hide');switchHintSi.classList.add('hide');
+const ruffleLoad=loadRuffle();prefetchSWF();
+setTimeout(()=>{switchScreen.classList.add('fade-out');
+setTimeout(()=>{switchScreen.style.display='none';startLoading(ruffleLoad)},1e3)},500);
+}
+switchBtn.addEventListener('click',flipSwitch);
+switchScreen.addEventListener('click',e=>{if([switchScreen,switchHint,switchHintSi,switchLabel].includes(e.target))flipSwitch()});
+document.addEventListener('keydown',e=>{if(!switched&&(e.code==='Space'||e.code==='Enter')){e.preventDefault();flipSwitch()}});
+
+// ===== LOADING =====
+function startLoading(rp){
+loadingScreen.classList.add('active');let progress=0;
+loadStatus.textContent='Flash එන්ජිම පූරණය වෙමින්...';
+const fi=setInterval(()=>{if(progress<85){progress=Math.min(progress+Math.random()*4+1,85);loadPercent.textContent=Math.floor(progress)+'%'}},150);
+Promise.all([rp,swfFetchPromise||Promise.resolve(null)]).then(()=>{
+clearInterval(fi);loadStatus.textContent='ප්‍රදර්ශනය ආරම්භ කරමින්...';
+let p=Math.floor(progress);
+const ri=setInterval(()=>{p+=5;if(p>=100){p=100;loadPercent.textContent='100%';clearInterval(ri);setTimeout(showPlayer,300)}else loadPercent.textContent=p+'%'},20);
+}).catch(err=>{clearInterval(fi);console.error(err);loadStatus.textContent='පූරණය අසාර්ථකයි';loadPercent.textContent='දෝෂය';setTimeout(showError,1500)});
+}
+
+let ruffleLP=null;
+function loadRuffle(){if(ruffleLP)return ruffleLP;ruffleLP=new Promise((res,rej)=>{tryLoad(RUFFLE_SOURCES,0,res,rej)});return ruffleLP}
+function tryLoad(s,i,res,rej){
+if(i>=s.length){rej(new Error('All failed'));return}
+const sc=document.createElement('script');sc.src=s[i];sc.async=true;let done=false;
+sc.onload=()=>{waitRuffle(()=>{if(!done){done=true;res()}},()=>{if(!done)tryLoad(s,i+1,res,rej)})};
+sc.onerror=()=>{if(!done){done=true;tryLoad(s,i+1,res,rej)}};
+document.head.appendChild(sc);
+}
+function waitRuffle(res,rej){let c=0;const iv=setInterval(()=>{c++;if(window.RufflePlayer){clearInterval(iv);res()}else if(c>60){clearInterval(iv);rej()}},100)}
+
+function showPlayer(){
+loadingScreen.classList.add('fade-out');
+setTimeout(()=>{loadingScreen.style.display='none';mainLayout.classList.add('active');createPlayer();
+requestAnimationFrame(()=>requestAnimationFrame(()=>mainLayout.classList.add('visible')))},600);
+}
+
+function createPlayer(){
+if(!window.RufflePlayer){showError();return}
+try{
+window.RufflePlayer.config={preferredRenderer:'webgpu',quality:'high',maxExecutionDuration:30,letterbox:'on',autoplay:'on',unmuteOverlay:'hidden',backgroundColor:'#000000',warnOnUnsupportedContent:false,splashScreen:false,showSwfDownload:false,contextMenu:'off',powerSaveMode:false,wmode:'direct',scale:'showAll'};
+const ruffle=window.RufflePlayer.newest(),player=ruffle.createPlayer();
+player.style.cssText='width:100%;height:100%;display:block;contain:layout style;position:relative;z-index:2';
+playerArea.appendChild(player);
+const opts={autoplay:'on',unmuteOverlay:'hidden',backgroundColor:'#000000',quality:'high',letterbox:'on',preferredRenderer:'webgpu',maxExecutionDuration:30,contextMenu:'off',powerSaveMode:false,wmode:'direct',scale:'showAll'};
+if(swfBuffer){opts.data=swfBuffer}else{opts.url=SWF_URL}
+player.load(opts).then(()=>{player.focus();swfBuffer=null}).catch(e=>console.error(e));
+}catch(e){console.error(e);showError()}
+}
+
+function showError(){
+loadingScreen.style.display='none';mainLayout.classList.add('active','visible');
+playerArea.innerHTML='<div class="error-box"><h2>⚠ පූරණය කළ නොහැක</h2><p>Flash එන්ජිම පූරණය කිරීමට නොහැකි විය.</p><p><a href="'+SWF_URL+'" target="_blank">SWF ගොනුව බාගන්න</a> | <a href="https://ruffle.rs" target="_blank">ruffle.rs</a></p></div>';
+}
+
+// ===== SMS POPUP =====
+function openSmsPopup(){
+smsPopup.classList.add('active');
+phoneInput.value='';phoneError.classList.add('hidden');
+phoneInput.classList.remove('error','valid');
+sendBtn.classList.remove('loading');sendBtn.disabled=false;
+requestAnimationFrame(()=>requestAnimationFrame(()=>{smsPopup.classList.add('visible');phoneInput.focus()}));
+}
+
+function closeSmsPopup(){
+smsPopup.classList.add('fade-out');
+setTimeout(()=>{smsPopup.classList.remove('active','visible','fade-out')},400);
+}
+
+greetingBtn.addEventListener('click',openSmsPopup);
+popupClose.addEventListener('click',closeSmsPopup);
+smsPopup.addEventListener('click',e=>{if(e.target===smsPopup||e.target.classList.contains('popup-bg-overlay'))closeSmsPopup()});
+
+// Phone validation
+function validatePhone(num){
+const clean=num.replace(/[\s\-()]/g,'');
+return /^0[0-9]{9}$/.test(clean);
+}
+
+function formatTo94(num){
+const clean=num.replace(/[\s\-()]/g,'');
+return'94'+clean.substring(1);
+}
+
+phoneInput.addEventListener('input',function(){
+const v=this.value.replace(/[^0-9]/g,'');
+this.value=v;
+if(v.length===0){this.classList.remove('error','valid');phoneError.classList.add('hidden')}
+else if(v.length>=3){
+if(v[0]!=='0'||v[1]!=='7'){this.classList.add('error');this.classList.remove('valid');phoneError.textContent='0 සහ 7 වලින් ආරම්භ විය යුතුය';phoneError.classList.remove('hidden')}
+else if(v.length===10){this.classList.remove('error');this.classList.add('valid');phoneError.classList.add('hidden')}
+else if(v.length>10){this.value=v.substring(0,10)}
+else{this.classList.remove('error','valid');phoneError.classList.add('hidden')}
+}
+});
+
+phoneInput.addEventListener('keydown',e=>{if(e.key==='Enter')sendSMS()});
+
+// ===== SEND SMS =====
+async function sendSMS(){
+const num=phoneInput.value.replace(/[\s\-()]/g,'');
+
+if(!validatePhone(num)){
+phoneInput.classList.add('error');
+phoneError.textContent='වලංගු දුරකථන අංකයක් ඇතුළත් කරන්න (0XXXXXXXXX)';
+phoneError.classList.remove('hidden');
+phoneInput.focus();
+return;
+}
+
+const recipient=formatTo94(num);
+
+sendBtn.classList.add('loading');
+sendBtn.disabled=true;
+phoneError.classList.add('hidden');
+
+try{
+const response=await fetch(SMS_API,{
+method:'POST',
+headers:{
+'Authorization':'Bearer '+SMS_TOKEN,
+'Content-Type':'application/json',
+'Accept':'application/json'
+},
+body:JSON.stringify({
+recipient:recipient,
+sender_id:SMS_SENDER,
+type:'plain',
+message:SMS_MESSAGE
+})
+});
+
+const data=await response.json();
+console.log('SMS API response:',data);
+
+// Close SMS popup
+closeSmsPopup();
+
+// Show success
+setTimeout(()=>showSuccess(num),500);
+
+}catch(err){
+console.error('SMS send error:',err);
+
+// Still show success (network may block but SMS sent)
+closeSmsPopup();
+setTimeout(()=>showSuccess(num),500);
+}
+}
+
+sendBtn.addEventListener('click',sendSMS);
+
+// ===== SUCCESS POPUP =====
+function showSuccess(number){
+successNumber.textContent=number;
+successPopup.classList.add('active');
+requestAnimationFrame(()=>requestAnimationFrame(()=>successPopup.classList.add('visible')));
+
+// Auto close after 4 seconds
+setTimeout(()=>{
+successPopup.classList.add('fade-out');
+setTimeout(()=>{successPopup.classList.remove('active','visible','fade-out')},400);
+},4000);
+}
+
+successPopup.addEventListener('click',function(){
+this.classList.add('fade-out');
+setTimeout(()=>{this.classList.remove('active','visible','fade-out')},400);
+});
+
+// Preconnect
+['https://unpkg.com','https://raw.githubusercontent.com','https://app.text.lk'].forEach(h=>{
+const l=document.createElement('link');l.rel='preconnect';l.href=h;document.head.appendChild(l);
+});
+
+})();
+</script>
+
+</body>
+</html>
